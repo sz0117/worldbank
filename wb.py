@@ -77,3 +77,130 @@ with open('/Users/sssssssidiiiiiiiiiii/Documents/DataCamp/WorldBank/.csv/Indicat
 
 # Print
 print(counts_dict)
+
+
+print("\n(4)Another way to read data too large to store \nin memory in chunks is to read the file in \nas DataFrames of a certain length, say, 10")
+# Import the pandas package
+import pandas as pd
+
+# Initialize reader object: df_reader
+df_reader = pd.read_csv('/Users/sssssssidiiiiiiiiiii/Documents/DataCamp/WorldBank/.csv/Indicators.csv','rt', chunksize=10, engine='python')
+
+# Print two chunks
+print(next(df_reader))
+print(next(df_reader))
+
+print("\n(5)read a file using a bigger DataFrame chunk size \nand then process the data from the first chunk\n")
+# Initialize reader object: urb_pop_reader
+import pandas as pd
+urb_pop_reader = pd.read_csv('/Users/sssssssidiiiiiiiiiii/Documents/DataCamp/WorldBank/.csv/Indicators.csv','rt', chunksize=1000, engine='python')
+
+# Get the first DataFrame chunk: df_urb_pop
+df_urb_pop = next(urb_pop_reader)
+
+# Check out the head of the DataFrame
+print(df_urb_pop.head())
+
+# Check out specific country: df_pop_ceb
+df_pop_ceb = df_urb_pop[df_urb_pop['CountryCode'] == 'CEB']
+
+# Zip DataFrame columns of interest: pops
+pops = zip(df_pop_ceb["Total Population"],
+           df_pop_ceb["Urban population (% of total)"])
+
+# Turn zip object into list: pops_list
+pops_list = list(pops)
+
+# Print pops_list
+print(pops_list)
+
+
+print("\n(6)cont. writing an iterator to load data in chunks\n")
+import pandas as pd
+# Code from previous exercise
+urb_pop_reader = pd.read_csv('/Users/sssssssidiiiiiiiiiii/Documents/DataCamp/WorldBank/.csv/Indicators.csv', chunksize=1000)
+df_urb_pop = next(urb_pop_reader)
+df_pop_ceb = df_urb_pop[df_urb_pop['CountryCode'] == 'CEB']
+pops = zip(df_pop_ceb['Total Population'],
+           df_pop_ceb['Urban population (% of total)'])
+pops_list = list(pops)
+
+# Use list comprehension to create new DataFrame column 'Total Urban Population'
+df_pop_ceb['Total Urban Population'] = [int(pops[0]*pops[1]*0.01) for pops in pops_list]
+
+# Plot urban population data
+df_pop_ceb.plot(kind='scatter', x='Year', y='Total Urban Population')
+plt.show()
+
+print("\n(7)cont. writing an iterator to load data in chunks\n")
+import pandas as pd
+# Initialize reader object: urb_pop_reader
+urb_pop_reader = pd.read_csv('/Users/sssssssidiiiiiiiiiii/Documents/DataCamp/WorldBank/.csv/Indicators.csv', chunksize=1000)
+
+# Initialize empty DataFrame: data
+data = pd.DataFrame()
+
+# Iterate over each DataFrame chunk
+for df_urb_pop in urb_pop_reader:
+
+    # Check out specific country: df_pop_ceb
+    df_pop_ceb = df_urb_pop[df_urb_pop['CountryCode'] == 'CEB']
+
+    # Zip DataFrame columns of interest: pops
+    pops = zip(df_pop_ceb['Total Population'],
+                df_pop_ceb['Urban population (% of total)'])
+
+    # Turn zip object into list: pops_list
+    pops_list = list(pops)
+
+    # Use list comprehension to create new DataFrame column 'Total Urban Population'
+    df_pop_ceb['Total Urban Population'] = [int(tup[0] * tup[1] * 0.01) for tup in pops_list]
+
+    # Append DataFrame chunk to data: data
+    data = data.append(df_pop_ceb)
+
+# Plot urban population data
+data.plot(kind='scatter', x='Year', y='Total Urban Population')
+plt.show()
+
+print("\n(8)cont. writing an iterator to load data in chunks\n")
+import pandas as pd
+# Define plot_pop()
+def plot_pop(filename, country_code):
+
+    # Initialize reader object: urb_pop_reader
+    urb_pop_reader = pd.read_csv(filename, chunksize=1000)
+
+    # Initialize empty DataFrame: data
+    data = pd.DataFrame()
+
+    # Iterate over each DataFrame chunk
+    for df_urb_pop in urb_pop_reader:
+        # Check out specific country: df_pop_ceb
+        df_pop_ceb = df_urb_pop[df_urb_pop['CountryCode'] == country_code]
+
+        # Zip DataFrame columns of interest: pops
+        pops = zip(df_pop_ceb['Total Population'],
+                    df_pop_ceb['Urban population (% of total)'])
+
+        # Turn zip object into list: pops_list
+        pops_list = list(pops)
+
+        # Use list comprehension to create new DataFrame column 'Total Urban Population'
+        df_pop_ceb['Total Urban Population'] = [int(tup[0] * tup[1] * 0.01) for tup in pops_list]
+
+        # Append DataFrame chunk to data: data
+        data = data.append(df_pop_ceb)
+
+    # Plot urban population data
+    data.plot(kind='scatter', x='Year', y='Total Urban Population')
+    plt.show()
+
+# Set the filename: fn
+fn = 'ind_pop_data.csv'
+
+# Call plot_pop for country code 'CEB'
+plot_pop(fn,'CEB')
+
+# Call plot_pop for country code 'ARB'
+plot_pop(fn,'ARB')
